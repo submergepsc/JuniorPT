@@ -1,11 +1,13 @@
 #ifndef PAYROLL_SYSTEM_H
 #define PAYROLL_SYSTEM_H
 
+#include <fstream>
 #include <iomanip>
 #include <iosfwd>
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -59,6 +61,8 @@ public:
 
     string getLevelLabel() const { return to_string(level_) + "级"; }
 
+    void restoreLastPay(double value) { lastPay_ = value; }
+
     void captureDetails(istream &in, ostream &out) {
         lastPay_ = 0.0;
         readExtraInfo(in, out);
@@ -70,6 +74,9 @@ public:
     }
 
     virtual string roleName() const = 0;
+    virtual string typeCode() const = 0;
+    virtual void saveExtra(ostream &out) const = 0;
+    virtual void loadExtra(const string &data) = 0;
 
 protected:
     virtual void readExtraInfo(istream &in, ostream &out) = 0;
@@ -88,6 +95,10 @@ public:
         : Person(id, name, 4) {}
 
     string roleName() const override { return "经理"; }
+    string typeCode() const override { return "Manager"; }
+
+    void saveExtra(ostream &out) const override { out << "0\n"; }
+    void loadExtra(const string &) override {}
 
 protected:
     void readExtraInfo(istream &, ostream &) override {}
@@ -100,6 +111,29 @@ public:
         : Person(id, name, 3), hourlyRate_(hourlyRate), hoursWorked_(0.0) {}
 
     string roleName() const override { return "技术人员"; }
+    string typeCode() const override { return "Technician"; }
+
+    void saveExtra(ostream &out) const override {
+        out << hourlyRate_ << ' ' << hoursWorked_ << "\n";
+    }
+
+    void loadExtra(const string &data) override {
+        istringstream stream(data);
+        double rate = 0.0;
+        double hours = 0.0;
+        if (stream >> rate) {
+            if (stream >> hours) {
+                hourlyRate_ = rate;
+                hoursWorked_ = hours;
+                return;
+            }
+            hourlyRate_ = 100.0;
+            hoursWorked_ = rate;
+            return;
+        }
+        hourlyRate_ = 100.0;
+        hoursWorked_ = 0.0;
+    }
 
 protected:
     void readExtraInfo(istream &in, ostream &out) override {
@@ -119,6 +153,16 @@ public:
         : Person(id, name, 1), salesAmount_(0.0) {}
 
     string roleName() const override { return "推销员"; }
+    string typeCode() const override { return "Salesperson"; }
+
+    void saveExtra(ostream &out) const override { out << salesAmount_ << "\n"; }
+
+    void loadExtra(const string &data) override {
+        istringstream stream(data);
+        if (!(stream >> salesAmount_)) {
+            salesAmount_ = 0.0;
+        }
+    }
 
 protected:
     void readExtraInfo(istream &in, ostream &out) override {
@@ -137,6 +181,16 @@ public:
         : Person(id, name, 2), departmentSales_(0.0) {}
 
     string roleName() const override { return "销售经理"; }
+    string typeCode() const override { return "SalesManager"; }
+
+    void saveExtra(ostream &out) const override { out << departmentSales_ << "\n"; }
+
+    void loadExtra(const string &data) override {
+        istringstream stream(data);
+        if (!(stream >> departmentSales_)) {
+            departmentSales_ = 0.0;
+        }
+    }
 
 protected:
     void readExtraInfo(istream &in, ostream &out) override {
@@ -151,7 +205,10 @@ private:
 
 class PayrollSystem {
 public:
-    PayrollSystem() : nextId_(2001) {}
+    PayrollSystem()
+        : nextId_(2001), recordPath_(determineRecordPath()) {
+        loadRecords();
+    }
 
     void run();
 
@@ -161,9 +218,14 @@ private:
     void handleProcessPayroll(ostream &out);
     void handleShowPayroll(ostream &out) const;
     unique_ptr<Person> createEmployee(int choice, istream &in, ostream &out);
+    unique_ptr<Person> recreateEmployee(const string &type, int id, const string &name);
+    string determineRecordPath() const;
+    void loadRecords();
+    void saveRecords() const;
 
     int nextId_;
     vector<unique_ptr<Person>> employees_;
+    string recordPath_;
 };
 
 inline void PayrollSystem::run() {
@@ -183,6 +245,7 @@ inline void PayrollSystem::run() {
 
         switch (choice) {
         case 0:
+            saveRecords();
             out << "程序结束，感谢使用！\n";
             return;
         case 1:
@@ -238,6 +301,7 @@ inline void PayrollSystem::handleAddEmployee(istream &in, ostream &out) {
     out << "已添加员工：" << employee->getName() << " (" << employee->roleName()
         << ", 工号" << employee->getId() << ")\n";
     employees_.push_back(move(employee));
+    saveRecords();
 }
 
 inline void PayrollSystem::handleProcessPayroll(ostream &out) {
@@ -250,6 +314,7 @@ inline void PayrollSystem::handleProcessPayroll(ostream &out) {
     for (auto &employee : employees_) {
         total += employee->processPayroll();
     }
+    saveRecords();
     out << "本月薪资结算完成，总支出：" << fixed << setprecision(2) << total << " 元\n";
 }
 
@@ -303,6 +368,121 @@ inline unique_ptr<Person> PayrollSystem::createEmployee(int choice, istream &in,
 
     ++nextId_;
     return employee;
+}
+
+inline unique_ptr<Person> PayrollSystem::recreateEmployee(const string &type, int id, const string &name) {
+    if (type == "Manager") {
+        return make_unique<Manager>(id, name);
+    }
+    if (type == "Technician") {
+        return make_unique<Technician>(id, name);
+    }
+    if (type == "Salesperson") {
+        return make_unique<Salesperson>(id, name);
+    }
+    if (type == "SalesManager") {
+        return make_unique<SalesManager>(id, name);
+    }
+    return nullptr;
+}
+
+inline string PayrollSystem::determineRecordPath() const {
+    const string localFile = "record.txt";
+    ifstream localStream(localFile);
+    if (localStream.is_open()) {
+        return localFile;
+    }
+
+    ifstream headerStream("payroll_system.h");
+    if (headerStream.is_open()) {
+        return localFile;
+    }
+
+    const string projectFile = "pro2/record.txt";
+    ifstream projectStream(projectFile);
+    if (projectStream.is_open()) {
+        return projectFile;
+    }
+
+    return projectFile;
+}
+
+inline void PayrollSystem::loadRecords() {
+    employees_.clear();
+    ifstream file(recordPath_);
+    if (!file.is_open()) {
+        return;
+    }
+
+    int storedNextId = nextId_;
+    if (!(file >> storedNextId)) {
+        return;
+    }
+
+    int recordCount = 0;
+    if (!(file >> recordCount)) {
+        return;
+    }
+    file.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    nextId_ = storedNextId;
+    for (int i = 0; i < recordCount; ++i) {
+        string type;
+        if (!(file >> type)) {
+            break;
+        }
+        file.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        int id = 0;
+        if (!(file >> id)) {
+            break;
+        }
+        file.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        string name;
+        if (!getline(file, name)) {
+            break;
+        }
+
+        double lastPay = 0.0;
+        if (!(file >> lastPay)) {
+            break;
+        }
+        file.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        string extraLine;
+        if (!getline(file, extraLine)) {
+            extraLine.clear();
+        }
+
+        auto employee = recreateEmployee(type, id, name);
+        if (!employee) {
+            continue;
+        }
+        employee->loadExtra(extraLine);
+        employee->restoreLastPay(lastPay);
+        if (id >= nextId_) {
+            nextId_ = id + 1;
+        }
+        employees_.push_back(move(employee));
+    }
+}
+
+inline void PayrollSystem::saveRecords() const {
+    ofstream file(recordPath_);
+    if (!file.is_open()) {
+        return;
+    }
+
+    file << nextId_ << '\n';
+    file << employees_.size() << '\n';
+    for (const auto &employee : employees_) {
+        file << employee->typeCode() << '\n';
+        file << employee->getId() << '\n';
+        file << employee->getName() << '\n';
+        file << employee->getLastPay() << '\n';
+        employee->saveExtra(file);
+    }
 }
 
 #endif // PAYROLL_SYSTEM_H
