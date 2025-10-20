@@ -1,5 +1,4 @@
-#include <bits/stdc++.h>
-
+ #include<bits/stdc++.h>
 int main() {
     std::string line;
     std::getline(std::cin, line);
@@ -19,3 +18,4 @@ int main() {
     }
     return 0;
 }
+
