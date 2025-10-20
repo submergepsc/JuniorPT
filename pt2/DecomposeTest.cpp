@@ -1,7 +1,11 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <sstream>
+#include <vector>
 
-std::string factorize(long long n) {
-    std::vector<long long> factors;
+using namespace std;
+
+string factorize(long long n) {
+    vector<long long> factors;
     long long value = n;
     for (long long i = 2; i * i <= value; ++i) {
         while (n % i == 0) {
@@ -12,7 +16,7 @@ std::string factorize(long long n) {
     if (n > 1) {
         factors.push_back(n);
     }
-    std::ostringstream oss;
+    ostringstream oss;
     oss << value << '=';
     for (size_t i = 0; i < factors.size(); ++i) {
         if (i) {
@@ -25,9 +29,9 @@ std::string factorize(long long n) {
 
 int main() {
     long long n;
-    if (!(std::cin >> n) || n <= 1) {
+    if (!(cin >> n) || n <= 1) {
         return 0;
     }
-    std::cout << factorize(n) << '\n';
+    cout << factorize(n) << '\n';
     return 0;
 }

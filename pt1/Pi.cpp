@@ -1,4 +1,8 @@
-#include <bits/stdc++.h>
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+
+using namespace std;
 
 int main() {
     const double eps = 1e-8;
@@ -9,14 +13,14 @@ int main() {
     while (true) {
         term = sign * 1.0 / (2 * k + 1);
         sum += term;
-        if (std::fabs(term) < eps) {
+        if (fabs(term) < eps) {
             break;
         }
         ++k;
         sign = -sign;
     }
-    std::cout.setf(std::ios::fixed);
-    std::cout << std::setprecision(10) << sum * 4 << '\n';
-    std::cout << "terms=" << (k + 1) << '\n';
+    cout.setf(ios::fixed);
+    cout << setprecision(10) << sum * 4 << '\n';
+    cout << "terms=" << (k + 1) << '\n';
     return 0;
 }

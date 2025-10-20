@@ -1,20 +1,25 @@
- #include<bits/stdc++.h>
+#include <iostream>
+#include <sstream>
+#include <string>
+
+using namespace std;
+
 int main() {
-    std::string line;
-    std::getline(std::cin, line);
-    if (line.empty() && std::cin.good()) {
-        std::getline(std::cin, line);
+    string line;
+    getline(cin, line);
+    if (line.empty() && cin.good()) {
+        getline(cin, line);
     }
-    std::istringstream iss(line);
-    std::string word;
-    std::string best;
+    istringstream iss(line);
+    string word;
+    string best;
     while (iss >> word) {
         if (word.size() > best.size()) {
             best = word;
         }
     }
     if (!best.empty()) {
-        std::cout << best << ' ' << best.size() << '\n';
+        cout << best << ' ' << best.size() << '\n';
     }
     return 0;
 }

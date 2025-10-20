@@ -1,24 +1,31 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+
+using namespace std;
 
 int main() {
     int n;
-    if (!(std::cin >> n) || n <= 0) {
+    if (!(cin >> n) || n <= 0) {
         return 0;
     }
-    std::vector<int> a(n);
+    vector<int> a(n);
     for (int i = 0; i < n; ++i) {
-        std::cin >> a[i];
+        cin >> a[i];
     }
     int x;
-    std::cin >> x;
-    a.insert(std::upper_bound(a.begin(), a.end(), x), x);
+    cin >> x;
+    size_t pos = 0;
+    while (pos < a.size() && a[pos] <= x) {
+        ++pos;
+    }
+    a.insert(a.begin() + static_cast<long long>(pos), x);
     for (size_t i = 0; i < a.size(); ++i) {
         if (i) {
-            std::cout << ' ';
+            cout << ' ';
         }
-        std::cout << a[i];
+        cout << a[i];
     }
-    std::cout << '\n';
+    cout << '\n';
     return 0;
 }
  

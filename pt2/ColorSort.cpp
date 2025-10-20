@@ -1,42 +1,49 @@
-#include <bits/stdc++.h>
+#include <cctype>
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
 
 int main() {
-    std::vector<std::string> colors;
-    std::string token;
-    while (std::cin >> token) {
-        std::string cleaned;
+    vector<string> reds;
+    vector<string> middles;
+    vector<string> blues;
+    vector<string> others;
+    string token;
+    while (cin >> token) {
+        string cleaned;
         for (char ch : token) {
-            if (std::isalpha(static_cast<unsigned char>(ch))) {
-                cleaned.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(ch))));
+            if (isalpha(static_cast<unsigned char>(ch))) {
+                cleaned.push_back(static_cast<char>(tolower(static_cast<unsigned char>(ch))));
             }
         }
-        if (!cleaned.empty()) {
-            colors.push_back(cleaned);
+        if (cleaned.empty()) {
+            continue;
+        }
+        if (cleaned == "red") {
+            reds.push_back(cleaned);
+        } else if (cleaned == "green" || cleaned == "white") {
+            middles.push_back(cleaned);
+        } else if (cleaned == "blue") {
+            blues.push_back(cleaned);
+        } else {
+            others.push_back(cleaned);
         }
     }
-    if (colors.empty()) {
-        return 0;
-    }
-    auto order = [](const std::string &color) {
-        if (color == "red") return 0;
-        if (color == "green" || color == "white") return 1;
-        if (color == "blue") return 2;
-        return 3;
-    };
-    std::stable_sort(colors.begin(), colors.end(), [&](const std::string &a, const std::string &b) {
-        int oa = order(a);
-        int ob = order(b);
-        if (oa != ob) {
-            return oa < ob;
+    bool first = true;
+    vector<vector<string>> groups = {reds, middles, blues, others};
+    for (const vector<string> &group : groups) {
+        for (const string &color : group) {
+            if (!first) {
+                cout << ' ';
+            }
+            cout << color;
+            first = false;
         }
-        return a < b;
-    });
-    for (size_t i = 0; i < colors.size(); ++i) {
-        if (i) {
-            std::cout << ' ';
-        }
-        std::cout << colors[i];
     }
-    std::cout << '\n';
+    if (!first) {
+        cout << '\n';
+    }
     return 0;
 }

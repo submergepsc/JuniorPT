@@ -1,12 +1,15 @@
-#include <bits/stdc++.h>
+#include <array>
+#include <iostream>
 
-void countDigit(long long n, std::array<int, 10> &a) {
+using namespace std;
+
+void countDigit(long long n, array<int, 10> &a) {
     a.fill(0);
     if (n == 0) {
         a[0] = 1;
         return;
     }
-    long long value = std::llabs(n);
+    long long value = n >= 0 ? n : -n;
     while (value > 0) {
         int d = static_cast<int>(value % 10);
         ++a[d];
@@ -16,17 +19,17 @@ void countDigit(long long n, std::array<int, 10> &a) {
 
 int main() {
     long long n;
-    if (!(std::cin >> n)) {
+    if (!(cin >> n)) {
         return 0;
     }
-    std::array<int, 10> cnt{};
+    array<int, 10> cnt{};
     countDigit(n, cnt);
     for (int i = 0; i < 10; ++i) {
-        std::cout << i << ':' << cnt[i];
+        cout << i << ':' << cnt[i];
         if (i + 1 != 10) {
-            std::cout << ' ';
+            cout << ' ';
         }
     }
-    std::cout << '\n';
+    cout << '\n';
     return 0;
 }

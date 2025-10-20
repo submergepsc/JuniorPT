@@ -1,16 +1,19 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+
+using namespace std;
 
 int main() {
     int n;
-    if (!(std::cin >> n) || n <= 0) {
+    if (!(cin >> n) || n <= 0) {
         return 0;
     }
-    std::vector<int> gas(n), cost(n);
+    vector<int> gas(n), cost(n);
     for (int i = 0; i < n; ++i) {
-        std::cin >> gas[i];
+        cin >> gas[i];
     }
     for (int i = 0; i < n; ++i) {
-        std::cin >> cost[i];
+        cin >> cost[i];
     }
     int total = 0;
     int tank = 0;
@@ -25,9 +28,9 @@ int main() {
         }
     }
     if (total >= 0 && start < n) {
-        std::cout << start << '\n';
+        cout << start << '\n';
     } else {
-        std::cout << -1 << '\n';
+        cout << -1 << '\n';
     }
     return 0;
 }

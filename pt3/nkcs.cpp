@@ -1,18 +1,20 @@
-#include <bits/stdc++.h>
+#include <iostream>
+
+using namespace std;
 
 int main() {
     long long n;
-    if (!(std::cin >> n) || n <= 0) {
+    if (!(cin >> n) || n <= 0) {
         return 0;
     }
     long long start = n * n - n + 1;
-    std::cout << n << "^3 = ";
+    cout << n << "^3 = ";
     for (long long i = 0; i < n; ++i) {
         if (i) {
-            std::cout << '+';
+            cout << '+';
         }
-        std::cout << (start + 2 * i);
+        cout << (start + 2 * i);
     }
-    std::cout << '\n';
+    cout << '\n';
     return 0;
 }

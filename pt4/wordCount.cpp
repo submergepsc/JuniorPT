@@ -1,13 +1,18 @@
-#include <bits/stdc++.h>
+#include <cctype>
+#include <iostream>
+#include <map>
+#include <string>
+
+using namespace std;
 
 int main() {
-    std::map<std::string, int> freq;
-    std::string line;
-    while (std::getline(std::cin, line)) {
-        std::string word;
+    map<string, int> freq;
+    string line;
+    while (getline(cin, line)) {
+        string word;
         for (char ch : line) {
-            if (std::isalpha(static_cast<unsigned char>(ch))) {
-                word.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(ch))));
+            if (isalpha(static_cast<unsigned char>(ch))) {
+                word.push_back(static_cast<char>(tolower(static_cast<unsigned char>(ch))));
             } else {
                 if (!word.empty()) {
                     ++freq[word];
@@ -20,7 +25,7 @@ int main() {
         }
     }
     for (const auto &entry : freq) {
-        std::cout << entry.first << ' ' << entry.second << '\n';
+        cout << entry.first << ' ' << entry.second << '\n';
     }
     return 0;
 }

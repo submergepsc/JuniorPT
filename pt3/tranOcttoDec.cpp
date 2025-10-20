@@ -1,8 +1,11 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <string>
+
+using namespace std;
 
 int main() {
-    std::string s;
-    if (!(std::cin >> s)) {
+    string s;
+    if (!(cin >> s)) {
         return 0;
     }
     bool valid = !s.empty();
@@ -16,9 +19,9 @@ int main() {
         value = value * 8 + digit;
     }
     if (!valid) {
-        std::cout << "Invalid octal number" << '\n';
+        cout << "Invalid octal number" << '\n';
     } else {
-        std::cout << value << '\n';
+        cout << value << '\n';
     }
     return 0;
 }

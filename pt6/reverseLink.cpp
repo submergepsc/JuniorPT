@@ -1,4 +1,7 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <string>
+
+using namespace std;
 
 struct Node {
     char data;
@@ -6,7 +9,7 @@ struct Node {
     explicit Node(char ch) : data(ch), next(nullptr) {}
 };
 
-Node* createList(const std::string &input) {
+Node* createList(const string &input) {
     Node *head = new Node('\0');
     Node *tail = head;
     for (char ch : input) {
@@ -21,13 +24,13 @@ void printList(Node *head) {
     bool first = true;
     while (head) {
         if (!first) {
-            std::cout << ' ';
+            cout << ' ';
         }
-        std::cout << head->data;
+        cout << head->data;
         first = false;
         head = head->next;
     }
-    std::cout << '\n';
+    cout << '\n';
 }
 
 void reverse(Node *head) {
@@ -51,15 +54,15 @@ void freeList(Node *head) {
 }
 
 int main() {
-    std::string input;
-    if (!std::getline(std::cin, input) || input.empty()) {
+    string input;
+    if (!getline(cin, input) || input.empty()) {
         return 0;
     }
     Node *head = createList(input);
-    std::cout << "Original:" << '\n';
+    cout << "Original:" << '\n';
     printList(head->next);
     reverse(head);
-    std::cout << "Reversed:" << '\n';
+    cout << "Reversed:" << '\n';
     printList(head->next);
     freeList(head);
     return 0;

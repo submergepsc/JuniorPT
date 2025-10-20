@@ -1,23 +1,27 @@
-#include <bits/stdc++.h>
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+using namespace std;
 
 int main() {
     int n;
-    if (!(std::cin >> n) || n <= 0) {
+    if (!(cin >> n) || n <= 0) {
         return 0;
     }
-    std::vector<int> citations(n);
+    vector<int> citations(n);
     for (int i = 0; i < n; ++i) {
-        std::cin >> citations[i];
+        cin >> citations[i];
     }
-    std::sort(citations.begin(), citations.end(), std::greater<int>());
+    sort(citations.begin(), citations.end());
     int h = 0;
     for (int i = 0; i < n; ++i) {
-        if (citations[i] >= i + 1) {
-            h = i + 1;
-        } else {
+        int papers_at_least = n - i;
+        if (citations[i] >= papers_at_least) {
+            h = papers_at_least;
             break;
         }
     }
-    std::cout << h << '\n';
+    cout << h << '\n';
     return 0;
 }

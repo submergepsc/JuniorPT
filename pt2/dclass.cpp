@@ -1,35 +1,43 @@
-#include <bits/stdc++.h>
+#include <algorithm>
+#include <iostream>
+#include <random>
+#include <vector>
+
+using namespace std;
 
 int main() {
-    std::vector<int> ids;
+    vector<int> ids;
     for (int id = 2020001; id <= 2020100; ++id) {
         ids.push_back(id);
     }
     unsigned seed;
-    if (std::cin >> seed) {
-        std::mt19937 rng(seed);
-        std::shuffle(ids.begin(), ids.end(), rng);
+    if (cin >> seed) {
+        mt19937 rng(seed);
+        shuffle(ids.begin(), ids.end(), rng);
     } else {
-        std::mt19937 rng(std::random_device{}());
-        std::shuffle(ids.begin(), ids.end(), rng);
+        mt19937 rng(random_device{}());
+        shuffle(ids.begin(), ids.end(), rng);
     }
-    auto print_group = [](const std::vector<int> &group) {
-        for (size_t i = 0; i < group.size(); ++i) {
-            std::cout << group[i];
-            if ((i + 1) % 8 == 0 || i + 1 == group.size()) {
-                std::cout << '\n';
-            } else {
-                std::cout << ' ';
-            }
+    vector<int> classA(ids.begin(), ids.begin() + 50);
+    vector<int> classB(ids.begin() + 50, ids.end());
+
+    cout << "Class A:\n";
+    for (size_t i = 0; i < classA.size(); ++i) {
+        cout << classA[i];
+        if ((i + 1) % 8 == 0 || i + 1 == classA.size()) {
+            cout << '\n';
+        } else {
+            cout << ' ';
         }
-    };
-
-    std::vector<int> classA(ids.begin(), ids.begin() + 50);
-    std::vector<int> classB(ids.begin() + 50, ids.end());
-
-    std::cout << "Class A:\n";
-    print_group(classA);
-    std::cout << "Class B:\n";
-    print_group(classB);
+    }
+    cout << "Class B:\n";
+    for (size_t i = 0; i < classB.size(); ++i) {
+        cout << classB[i];
+        if ((i + 1) % 8 == 0 || i + 1 == classB.size()) {
+            cout << '\n';
+        } else {
+            cout << ' ';
+        }
+    }
     return 0;
 }

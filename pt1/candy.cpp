@@ -1,15 +1,18 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+
+using namespace std;
 
 int main() {
     int n;
-    if (!(std::cin >> n) || n <= 0) {
+    if (!(cin >> n) || n <= 0) {
         return 0;
     }
-    std::vector<int> ratings(n);
+    vector<int> ratings(n);
     for (int i = 0; i < n; ++i) {
-        std::cin >> ratings[i];
+        cin >> ratings[i];
     }
-    std::vector<int> candies(n, 1);
+    vector<int> candies(n, 1);
     for (int i = 1; i < n; ++i) {
         if (ratings[i] > ratings[i - 1]) {
             candies[i] = candies[i - 1] + 1;
@@ -17,10 +20,15 @@ int main() {
     }
     for (int i = n - 2; i >= 0; --i) {
         if (ratings[i] > ratings[i + 1]) {
-            candies[i] = std::max(candies[i], candies[i + 1] + 1);
+            if (candies[i] < candies[i + 1] + 1) {
+                candies[i] = candies[i + 1] + 1;
+            }
         }
     }
-    long long total = std::accumulate(candies.begin(), candies.end(), 0LL);
-    std::cout << total << '\n';
+    long long total = 0;
+    for (int value : candies) {
+        total += value;
+    }
+    cout << total << '\n';
     return 0;
 }

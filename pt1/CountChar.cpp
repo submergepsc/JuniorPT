@@ -1,27 +1,31 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <map>
+#include <string>
+
+using namespace std;
 
 int main() {
-    std::string s;
-    if (!std::getline(std::cin, s)) {
+    string s;
+    if (!getline(cin, s)) {
         return 0;
     }
-    if (s.empty() && std::cin) {
-        std::getline(std::cin, s);
+    if (s.empty() && cin) {
+        getline(cin, s);
     }
-    std::map<char, int> freq;
+    map<char, int> freq;
     for (char ch : s) {
         ++freq[ch];
     }
     bool first = true;
     for (const auto &entry : freq) {
         if (!first) {
-            std::cout << ' ';
+            cout << ' ';
         }
-        std::cout << entry.first << '=' << entry.second;
+        cout << entry.first << '=' << entry.second;
         first = false;
     }
     if (!freq.empty()) {
-        std::cout << '\n';
+        cout << '\n';
     }
     return 0;
 }
