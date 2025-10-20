@@ -1,4 +1,7 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+
+using namespace std;
 
 struct Node {
     int value;
@@ -6,7 +9,7 @@ struct Node {
     explicit Node(int v) : value(v), next(nullptr) {}
 };
 
-Node* build_list(const std::vector<int>& values) {
+Node* build_list(const vector<int>& values) {
     if (values.empty()) {
         return nullptr;
     }
@@ -35,13 +38,13 @@ void print_list(Node *head) {
     bool first = true;
     while (head) {
         if (!first) {
-            std::cout << ' ';
+            cout << ' ';
         }
-        std::cout << head->value;
+        cout << head->value;
         first = false;
         head = head->next;
     }
-    std::cout << '\n';
+    cout << '\n';
 }
 
 void free_list(Node *head) {
@@ -54,20 +57,20 @@ void free_list(Node *head) {
 
 int main() {
     int na;
-    if (!(std::cin >> na) || na < 0) {
+    if (!(cin >> na) || na < 0) {
         return 0;
     }
-    std::vector<int> a(na);
+    vector<int> a(na);
     for (int i = 0; i < na; ++i) {
-        std::cin >> a[i];
+        cin >> a[i];
     }
     int nb;
-    if (!(std::cin >> nb) || nb < 0) {
+    if (!(cin >> nb) || nb < 0) {
         nb = 0;
     }
-    std::vector<int> b(nb);
+    vector<int> b(nb);
     for (int i = 0; i < nb; ++i) {
-        std::cin >> b[i];
+        cin >> b[i];
     }
     Node *heada = build_list(a);
     Node *headb = build_list(b);

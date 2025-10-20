@@ -1,11 +1,14 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+
+using namespace std;
 
 int main() {
     int n;
-    if (!(std::cin >> n) || n <= 0 || n % 2 == 0) {
+    if (!(cin >> n) || n <= 0 || n % 2 == 0) {
         return 0;
     }
-    std::vector<std::vector<int>> magic(n, std::vector<int>(n, 0));
+    vector<vector<int>> magic(n, vector<int>(n, 0));
     int num = 1;
     int i = 0;
     int j = n / 2;
@@ -22,11 +25,11 @@ int main() {
     for (int r = 0; r < n; ++r) {
         for (int c = 0; c < n; ++c) {
             if (c) {
-                std::cout << ' ';
+                cout << ' ';
             }
-            std::cout << magic[r][c];
+            cout << magic[r][c];
         }
-        std::cout << '\n';
+        cout << '\n';
     }
     return 0;
 }

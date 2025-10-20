@@ -1,8 +1,10 @@
-#include <bits/stdc++.h>
+#include <iostream>
+
+using namespace std;
 
 int main() {
     long long n;
-    if (!(std::cin >> n) || n < 0) {
+    if (!(cin >> n) || n < 0) {
         return 0;
     }
     long long original = n;
@@ -12,9 +14,9 @@ int main() {
         n /= 10;
     }
     if (reversed == original) {
-        std::cout << "Yes" << '\n';
+        cout << "Yes" << '\n';
     } else {
-        std::cout << "No" << '\n';
+        cout << "No" << '\n';
     }
     return 0;
 }

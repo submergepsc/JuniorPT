@@ -1,4 +1,6 @@
-#include <bits/stdc++.h>
+#include <iostream>
+
+using namespace std;
 
 struct Node {
     int id;
@@ -8,7 +10,7 @@ struct Node {
 
 int main() {
     int n, m;
-    if (!(std::cin >> n >> m) || n <= 0 || m <= 0) {
+    if (!(cin >> n >> m) || n <= 0 || m <= 0) {
         return 0;
     }
     Node *head = new Node(1);
@@ -30,7 +32,7 @@ int main() {
         current = current->next;
         delete to_delete;
     }
-    std::cout << current->id << '\n';
+    cout << current->id << '\n';
     delete current;
     return 0;
 }

@@ -1,17 +1,20 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <string>
+
+using namespace std;
 
 int main() {
     int n;
-    if (!(std::cin >> n) || n <= 0) {
+    if (!(cin >> n) || n <= 0) {
         return 0;
     }
     for (int i = 1; i <= n; ++i) {
         int stars = 2 * i - 1;
-        std::cout << std::string(stars, '*') << '\n';
+        cout << string(stars, '*') << '\n';
     }
     for (int i = n - 1; i >= 1; --i) {
         int stars = 2 * i - 1;
-        std::cout << std::string(stars, '*') << '\n';
+        cout << string(stars, '*') << '\n';
     }
     return 0;
 }

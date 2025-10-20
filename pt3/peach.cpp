@@ -1,4 +1,6 @@
-#include <bits/stdc++.h>
+#include <iostream>
+
+using namespace std;
 
 int main() {
     int days = 10;
@@ -6,6 +8,6 @@ int main() {
     for (int day = days - 1; day >= 1; --day) {
         peaches = (peaches + 1) * 2;
     }
-    std::cout << peaches << '\n';
+    cout << peaches << '\n';
     return 0;
 }

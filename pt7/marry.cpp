@@ -1,82 +1,92 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <queue>
+#include <string>
+#include <unordered_map>
+
+using namespace std;
 
 struct Person {
     char gender = '?';
-    std::string father = "-1";
-    std::string mother = "-1";
+    string father = "-1";
+    string mother = "-1";
 };
+
+unordered_map<string, int> collectAncestors(const string &root, const unordered_map<string, Person> &people) {
+    unordered_map<string, int> depth;
+    queue<pair<string, int>> q;
+    q.push(make_pair(root, 0));
+    while (!q.empty()) {
+        pair<string, int> node = q.front();
+        q.pop();
+        const string &id = node.first;
+        int d = node.second;
+        if (id == "-1" || d > 4) {
+            continue;
+        }
+        unordered_map<string, int>::const_iterator it = depth.find(id);
+        if (it != depth.end() && it->second <= d) {
+            continue;
+        }
+        depth[id] = d;
+        unordered_map<string, Person>::const_iterator person_it = people.find(id);
+        if (person_it != people.end()) {
+            const Person &p = person_it->second;
+            q.push(make_pair(p.father, d + 1));
+            q.push(make_pair(p.mother, d + 1));
+        }
+    }
+    return depth;
+}
 
 int main() {
     int n;
-    if (!(std::cin >> n) || n <= 0) {
+    if (!(cin >> n) || n <= 0) {
         return 0;
     }
-    std::unordered_map<std::string, Person> people;
-    people.reserve(n * 2);
-    auto ensure = [&](const std::string &id) {
-        if (id != "-1" && !people.count(id)) {
-            people[id] = Person{};
-        }
-    };
+    unordered_map<string, Person> people;
+    people.reserve(static_cast<size_t>(n) * 2);
     for (int i = 0; i < n; ++i) {
-        std::string id, gender, father, mother;
-        std::cin >> id >> gender >> father >> mother;
+        string id, gender, father, mother;
+        cin >> id >> gender >> father >> mother;
         Person &p = people[id];
         p.gender = gender.empty() ? '?' : gender[0];
         p.father = father;
         p.mother = mother;
-        ensure(father);
-        ensure(mother);
+        if (father != "-1" && people.find(father) == people.end()) {
+            people[father] = Person{};
+        }
+        if (mother != "-1" && people.find(mother) == people.end()) {
+            people[mother] = Person{};
+        }
     }
     int k;
-    if (!(std::cin >> k) || k < 0) {
+    if (!(cin >> k) || k < 0) {
         return 0;
     }
-    auto collect = [&](const std::string &root) {
-        std::unordered_map<std::string, int> depth;
-        std::queue<std::pair<std::string, int>> q;
-        q.push({root, 0});
-        while (!q.empty()) {
-            auto [id, d] = q.front();
-            q.pop();
-            if (id == "-1" || d > 4) {
-                continue;
-            }
-            auto it = depth.find(id);
-            if (it != depth.end() && it->second <= d) {
-                continue;
-            }
-            depth[id] = d;
-            const Person &p = people[id];
-            q.push({p.father, d + 1});
-            q.push({p.mother, d + 1});
-        }
-        return depth;
-    };
 
     while (k--) {
-        std::string a, b;
-        std::cin >> a >> b;
-        if (!std::cin) {
+        string a, b;
+        cin >> a >> b;
+        if (!cin) {
             break;
         }
         if (!people.count(a) || !people.count(b)) {
-            std::cout << "No" << '\n';
+            cout << "No" << '\n';
             continue;
         }
         if (people[a].gender == people[b].gender) {
-            std::cout << "Never Mind" << '\n';
+            cout << "Never Mind" << '\n';
             continue;
         }
-        auto ancestorsA = collect(a);
-        auto ancestorsB = collect(b);
+        unordered_map<string, int> ancestorsA = collectAncestors(a, people);
+        unordered_map<string, int> ancestorsB = collectAncestors(b, people);
         bool forbidden = false;
         for (const auto &entry : ancestorsA) {
-            const std::string &ancestor = entry.first;
+            const string &ancestor = entry.first;
             if (ancestor == "-1") {
                 continue;
             }
-            auto it = ancestorsB.find(ancestor);
+            unordered_map<string, int>::const_iterator it = ancestorsB.find(ancestor);
             if (it != ancestorsB.end()) {
                 int depthA = entry.second;
                 int depthB = it->second;
@@ -87,9 +97,9 @@ int main() {
             }
         }
         if (forbidden) {
-            std::cout << "No" << '\n';
+            cout << "No" << '\n';
         } else {
-            std::cout << "Yes" << '\n';
+            cout << "Yes" << '\n';
         }
     }
     return 0;

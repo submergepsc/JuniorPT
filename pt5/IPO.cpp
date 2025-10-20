@@ -1,26 +1,32 @@
-#include <bits/stdc++.h>
+#include <algorithm>
+#include <iostream>
+#include <queue>
+#include <utility>
+#include <vector>
+
+using namespace std;
 
 int main() {
     int k, n;
     long long w;
-    if (!(std::cin >> k >> w >> n) || k < 0 || n < 0) {
+    if (!(cin >> k >> w >> n) || k < 0 || n < 0) {
         return 0;
     }
-    std::vector<long long> profits(n);
-    std::vector<long long> capital(n);
+    vector<long long> profits(n);
+    vector<long long> capital(n);
     for (int i = 0; i < n; ++i) {
-        std::cin >> profits[i];
+        cin >> profits[i];
     }
     for (int i = 0; i < n; ++i) {
-        std::cin >> capital[i];
+        cin >> capital[i];
     }
-    std::vector<std::pair<long long, long long>> projects;
+    vector<pair<long long, long long>> projects;
     projects.reserve(n);
     for (int i = 0; i < n; ++i) {
         projects.emplace_back(capital[i], profits[i]);
     }
-    std::sort(projects.begin(), projects.end());
-    std::priority_queue<long long> available;
+    sort(projects.begin(), projects.end());
+    priority_queue<long long> available;
     size_t idx = 0;
     for (int i = 0; i < k; ++i) {
         while (idx < projects.size() && projects[idx].first <= w) {
@@ -33,6 +39,6 @@ int main() {
         w += available.top();
         available.pop();
     }
-    std::cout << w << '\n';
+    cout << w << '\n';
     return 0;
 }

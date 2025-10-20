@@ -1,4 +1,6 @@
-#include <bits/stdc++.h>
+#include <iostream>
+
+using namespace std;
 
 bool isAutomorphic(int n) {
     long long square = 1LL * n * n;
@@ -16,7 +18,7 @@ bool isAutomorphic(int n) {
 int main() {
     for (int i = 1; i <= 10000; ++i) {
         if (isAutomorphic(i)) {
-            std::cout << i << '\n';
+            cout << i << '\n';
         }
     }
     return 0;
