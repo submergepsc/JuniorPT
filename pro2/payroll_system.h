@@ -2,9 +2,6 @@
 #define PAYROLL_SYSTEM_H
 
 #include <fstream>
-#include <iomanip>
-#include <iosfwd>
-#include <iostream>
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -12,135 +9,67 @@
 #include <utility>
 #include <vector>
 
-using namespace std;
-
-inline double readNonNegativeDouble(istream &in, ostream &out, const string &prompt) {
-    while (true) {
-        out << prompt;
-        double value = 0.0;
-        if (in >> value) {
-            if (value >= 0.0) {
-                in.ignore(numeric_limits<streamsize>::max(), '\n');
-                return value;
-            }
-            out << "值不能为负，请重新输入。\n";
-        } else {
-            out << "输入无效，请输入数字。\n";
-            in.clear();
-        }
-        in.ignore(numeric_limits<streamsize>::max(), '\n');
-    }
-}
-
-inline string readName(istream &in, ostream &out) {
-    while (true) {
-        out << "请输入姓名：";
-        string name;
-        getline(in, name);
-        if (!name.empty()) {
-            return name;
-        }
-        out << "姓名不能为空，请重新输入。\n";
-    }
-}
-
 class Person {
 public:
-    Person(int id, string name, int level)
-        : id_(id), name_(move(name)), level_(level), lastPay_(0.0) {}
-
+    Person(int id, std::string name, int level);
     virtual ~Person() = default;
 
-    int getId() const noexcept { return id_; }
+    int id() const noexcept;
+    const std::string &name() const noexcept;
+    int level() const noexcept;
+    double lastPay() const noexcept;
+    std::string levelLabel() const;
 
-    const string &getName() const noexcept { return name_; }
+    double processPayroll();
+    void restoreLastPay(double value);
 
-    int getLevel() const noexcept { return level_; }
+    virtual std::string roleName() const = 0;
+    virtual std::string typeCode() const = 0;
 
-    double getLastPay() const noexcept { return lastPay_; }
-
-    string getLevelLabel() const { return to_string(level_) + "级"; }
-
-    void restoreLastPay(double value) { lastPay_ = value; }
-
-    void captureDetails(istream &in, ostream &out) {
-        lastPay_ = 0.0;
-        readExtraInfo(in, out);
-    }
-
-    double processPayroll() {
-        lastPay_ = computePay();
-        return lastPay_;
-    }
-
-    virtual string roleName() const = 0;
-    virtual string typeCode() const = 0;
-    virtual void saveExtra(ostream &out) const = 0;
-    virtual void loadExtra(const string &data) = 0;
+    virtual void writeExtra(std::ostream &out) const = 0;
+    virtual void readExtra(std::istream &in) = 0;
 
 protected:
-    virtual void readExtraInfo(istream &in, ostream &out) = 0;
     virtual double computePay() const = 0;
 
 private:
     int id_;
-    string name_;
+    std::string name_;
     int level_;
     double lastPay_;
 };
 
 class Manager : public Person {
 public:
-    explicit Manager(int id, const string &name)
-        : Person(id, name, 4) {}
+    Manager(int id, std::string name);
 
-    string roleName() const override { return "经理"; }
-    string typeCode() const override { return "Manager"; }
+    std::string roleName() const override;
+    std::string typeCode() const override;
 
-    void saveExtra(ostream &out) const override { out << "0\n"; }
-    void loadExtra(const string &) override {}
+    void writeExtra(std::ostream &out) const override;
+    void readExtra(std::istream &in) override;
 
 protected:
-    void readExtraInfo(istream &, ostream &) override {}
-    double computePay() const override { return 18000.0; }
+    double computePay() const override;
 };
 
 class Technician : public Person {
 public:
-    Technician(int id, const string &name, double hourlyRate = 100.0)
-        : Person(id, name, 3), hourlyRate_(hourlyRate), hoursWorked_(0.0) {}
+    Technician(int id, std::string name, double hourlyRate = 100.0, double hoursWorked = 0.0);
 
-    string roleName() const override { return "技术人员"; }
-    string typeCode() const override { return "Technician"; }
+    double hourlyRate() const noexcept;
+    double hoursWorked() const noexcept;
+    void setHourlyRate(double rate);
+    void setHoursWorked(double hours);
 
-    void saveExtra(ostream &out) const override {
-        out << hourlyRate_ << ' ' << hoursWorked_ << "\n";
-    }
+    std::string roleName() const override;
+    std::string typeCode() const override;
 
-    void loadExtra(const string &data) override {
-        istringstream stream(data);
-        double rate = 0.0;
-        double hours = 0.0;
-        if (stream >> rate) {
-            if (stream >> hours) {
-                hourlyRate_ = rate;
-                hoursWorked_ = hours;
-                return;
-            }
-            hourlyRate_ = 100.0;
-            hoursWorked_ = rate;
-            return;
-        }
-        hourlyRate_ = 100.0;
-        hoursWorked_ = 0.0;
-    }
+    void writeExtra(std::ostream &out) const override;
+    void readExtra(std::istream &in) override;
 
 protected:
-    void readExtraInfo(istream &in, ostream &out) override {
-        hoursWorked_ = readNonNegativeDouble(in, out, "请输入本月工作小时数：");
-    }
-
-    double computePay() const override { return hourlyRate_ * hoursWorked_; }
+    double computePay() const override;
 
 private:
     double hourlyRate_;
@@ -149,27 +78,19 @@ private:
 
 class Salesperson : public Person {
 public:
-    explicit Salesperson(int id, const string &name)
-        : Person(id, name, 1), salesAmount_(0.0) {}
+    Salesperson(int id, std::string name, double salesAmount = 0.0);
 
-    string roleName() const override { return "推销员"; }
-    string typeCode() const override { return "Salesperson"; }
+    double salesAmount() const noexcept;
+    void setSalesAmount(double amount);
 
-    void saveExtra(ostream &out) const override { out << salesAmount_ << "\n"; }
+    std::string roleName() const override;
+    std::string typeCode() const override;
 
-    void loadExtra(const string &data) override {
-        istringstream stream(data);
-        if (!(stream >> salesAmount_)) {
-            salesAmount_ = 0.0;
-        }
-    }
+    void writeExtra(std::ostream &out) const override;
+    void readExtra(std::istream &in) override;
 
 protected:
-    void readExtraInfo(istream &in, ostream &out) override {
-        salesAmount_ = readNonNegativeDouble(in, out, "请输入本月销售额：");
-    }
-
-    double computePay() const override { return salesAmount_ * 0.04; }
+    double computePay() const override;
 
 private:
     double salesAmount_;
@@ -177,27 +98,19 @@ private:
 
 class SalesManager : public Person {
 public:
-    explicit SalesManager(int id, const string &name)
-        : Person(id, name, 2), departmentSales_(0.0) {}
+    SalesManager(int id, std::string name, double departmentSales = 0.0);
 
-    string roleName() const override { return "销售经理"; }
-    string typeCode() const override { return "SalesManager"; }
+    double departmentSales() const noexcept;
+    void setDepartmentSales(double amount);
 
-    void saveExtra(ostream &out) const override { out << departmentSales_ << "\n"; }
+    std::string roleName() const override;
+    std::string typeCode() const override;
 
-    void loadExtra(const string &data) override {
-        istringstream stream(data);
-        if (!(stream >> departmentSales_)) {
-            departmentSales_ = 0.0;
-        }
-    }
+    void writeExtra(std::ostream &out) const override;
+    void readExtra(std::istream &in) override;
 
 protected:
-    void readExtraInfo(istream &in, ostream &out) override {
-        departmentSales_ = readNonNegativeDouble(in, out, "请输入本月部门销售总额：");
-    }
-
-    double computePay() const override { return 5000.0 + departmentSales_ * 0.02; }
+    double computePay() const override;
 
 private:
     double departmentSales_;
@@ -205,211 +118,226 @@ private:
 
 class PayrollSystem {
 public:
-    PayrollSystem()
-        : nextId_(2001), recordPath_(determineRecordPath()) {
-        loadRecords();
-    }
+    static std::string defaultRecordPath();
 
-    void run();
+    explicit PayrollSystem(std::string recordPath = defaultRecordPath());
 
-private:
-    void showMenu(ostream &out) const;
-    void handleAddEmployee(istream &in, ostream &out);
-    void handleProcessPayroll(ostream &out);
-    void handleShowPayroll(ostream &out) const;
-    unique_ptr<Person> createEmployee(int choice, istream &in, ostream &out);
-    unique_ptr<Person> recreateEmployee(const string &type, int id, const string &name);
-    string determineRecordPath() const;
+    const std::string &recordPath() const noexcept;
+    void setRecordPath(std::string path);
+
+    Manager *addManager(const std::string &name);
+    Technician *addTechnician(const std::string &name, double hourlyRate, double hoursWorked);
+    Salesperson *addSalesperson(const std::string &name, double salesAmount);
+    SalesManager *addSalesManager(const std::string &name, double departmentSales);
+
+    std::vector<std::unique_ptr<Person>> &employees() noexcept;
+    const std::vector<std::unique_ptr<Person>> &employees() const noexcept;
+
+    Person *findById(int id) noexcept;
+    const Person *findById(int id) const noexcept;
+
+    double processPayroll(Person &person);
+    double processAllPayrolls();
+
     void loadRecords();
     void saveRecords() const;
 
+    int nextId() const noexcept;
+
+private:
+    template <typename T, typename... Args>
+    T *emplaceEmployee(Args &&...args);
+
+    std::unique_ptr<Person> recreateEmployee(const std::string &type, int id, const std::string &name) const;
+
     int nextId_;
-    vector<unique_ptr<Person>> employees_;
-    string recordPath_;
+    std::vector<std::unique_ptr<Person>> employees_;
+    std::string recordPath_;
 };
 
-inline void PayrollSystem::run() {
-    auto &in = cin;
-    auto &out = cout;
+inline Person::Person(int id, std::string name, int level)
+    : id_(id), name_(std::move(name)), level_(level), lastPay_(0.0) {}
 
-    while (true) {
-        showMenu(out);
-        int choice = -1;
-        if (!(in >> choice)) {
-            out << "输入无效，请输入数字指令。\n";
-            in.clear();
-            in.ignore(numeric_limits<streamsize>::max(), '\n');
-            continue;
+inline int Person::id() const noexcept { return id_; }
+
+inline const std::string &Person::name() const noexcept { return name_; }
+
+inline int Person::level() const noexcept { return level_; }
+
+inline double Person::lastPay() const noexcept { return lastPay_; }
+
+inline std::string Person::levelLabel() const { return std::to_string(level_) + "级"; }
+
+inline double Person::processPayroll() {
+    lastPay_ = computePay();
+    return lastPay_;
+}
+
+inline void Person::restoreLastPay(double value) { lastPay_ = value; }
+
+inline Manager::Manager(int id, std::string name)
+    : Person(id, std::move(name), 4) {}
+
+inline std::string Manager::roleName() const { return "经理"; }
+
+inline std::string Manager::typeCode() const { return "Manager"; }
+
+inline void Manager::writeExtra(std::ostream &out) const { (void)out; }
+
+inline void Manager::readExtra(std::istream &in) { (void)in; }
+
+inline double Manager::computePay() const { return 18000.0; }
+
+inline Technician::Technician(int id, std::string name, double hourlyRate, double hoursWorked)
+    : Person(id, std::move(name), 3), hourlyRate_(hourlyRate), hoursWorked_(hoursWorked) {}
+
+inline double Technician::hourlyRate() const noexcept { return hourlyRate_; }
+
+inline double Technician::hoursWorked() const noexcept { return hoursWorked_; }
+
+inline void Technician::setHourlyRate(double rate) { hourlyRate_ = rate; }
+
+inline void Technician::setHoursWorked(double hours) { hoursWorked_ = hours; }
+
+inline std::string Technician::roleName() const { return "技术人员"; }
+
+inline std::string Technician::typeCode() const { return "Technician"; }
+
+inline void Technician::writeExtra(std::ostream &out) const { out << hourlyRate_ << ' ' << hoursWorked_; }
+
+inline void Technician::readExtra(std::istream &in) {
+    double rate = hourlyRate_;
+    double hours = hoursWorked_;
+    if (in >> rate) {
+        if (!(in >> hours)) {
+            hours = 0.0;
         }
-        in.ignore(numeric_limits<streamsize>::max(), '\n');
-
-        switch (choice) {
-        case 0:
-            saveRecords();
-            out << "程序结束，感谢使用！\n";
-            return;
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-            handleAddEmployee(in, out);
-            break;
-        case 5:
-            handleProcessPayroll(out);
-            break;
-        case 6:
-            handleShowPayroll(out);
-            break;
-        default:
-            out << "未识别的指令，请重新选择。\n";
-            break;
-        }
+        hourlyRate_ = rate;
+        hoursWorked_ = hours;
+    } else {
+        hourlyRate_ = 100.0;
+        hoursWorked_ = 0.0;
     }
 }
 
-inline void PayrollSystem::showMenu(ostream &out) const {
-    out << "\n=========== 公司人员薪酬管理系统 ===========\n"
-        << "当前员工数量：" << employees_.size() << "\n"
-        << "1. 添加经理\n"
-        << "2. 添加技术人员\n"
-        << "3. 添加推销员\n"
-        << "4. 添加销售经理\n"
-        << "5. 结算本月薪资\n"
-        << "6. 查看薪资报表\n"
-        << "0. 退出系统\n"
-        << "==========================================\n"
-        << "请选择操作：";
+inline double Technician::computePay() const { return hourlyRate_ * hoursWorked_; }
+
+inline Salesperson::Salesperson(int id, std::string name, double salesAmount)
+    : Person(id, std::move(name), 1), salesAmount_(salesAmount) {}
+
+inline double Salesperson::salesAmount() const noexcept { return salesAmount_; }
+
+inline void Salesperson::setSalesAmount(double amount) { salesAmount_ = amount; }
+
+inline std::string Salesperson::roleName() const { return "推销员"; }
+
+inline std::string Salesperson::typeCode() const { return "Salesperson"; }
+
+inline void Salesperson::writeExtra(std::ostream &out) const { out << salesAmount_; }
+
+inline void Salesperson::readExtra(std::istream &in) {
+    double value = salesAmount_;
+    if (in >> value) {
+        salesAmount_ = value;
+    } else {
+        salesAmount_ = 0.0;
+    }
 }
 
-inline void PayrollSystem::handleAddEmployee(istream &in, ostream &out) {
-    out << "请选择员工类型 (1-经理, 2-技术人员, 3-推销员, 4-销售经理)：";
-    int type = 0;
-    if (!(in >> type)) {
-        out << "输入无效，取消新增操作。\n";
-        in.clear();
-        in.ignore(numeric_limits<streamsize>::max(), '\n');
-        return;
-    }
-    in.ignore(numeric_limits<streamsize>::max(), '\n');
+inline double Salesperson::computePay() const { return salesAmount_ * 0.04; }
 
-    auto employee = createEmployee(type, in, out);
-    if (!employee) {
-        out << "未创建员工。\n";
-        return;
+inline SalesManager::SalesManager(int id, std::string name, double departmentSales)
+    : Person(id, std::move(name), 2), departmentSales_(departmentSales) {}
+
+inline double SalesManager::departmentSales() const noexcept { return departmentSales_; }
+
+inline void SalesManager::setDepartmentSales(double amount) { departmentSales_ = amount; }
+
+inline std::string SalesManager::roleName() const { return "销售经理"; }
+
+inline std::string SalesManager::typeCode() const { return "SalesManager"; }
+
+inline void SalesManager::writeExtra(std::ostream &out) const { out << departmentSales_; }
+
+inline void SalesManager::readExtra(std::istream &in) {
+    double value = departmentSales_;
+    if (in >> value) {
+        departmentSales_ = value;
+    } else {
+        departmentSales_ = 0.0;
     }
-    employee->captureDetails(in, out);
-    out << "已添加员工：" << employee->getName() << " (" << employee->roleName()
-        << ", 工号" << employee->getId() << ")\n";
-    employees_.push_back(move(employee));
-    saveRecords();
 }
 
-inline void PayrollSystem::handleProcessPayroll(ostream &out) {
-    if (employees_.empty()) {
-        out << "暂无员工信息，请先录入员工。\n";
-        return;
-    }
+inline double SalesManager::computePay() const { return 5000.0 + departmentSales_ * 0.02; }
 
-    double total = 0.0;
+inline std::string PayrollSystem::defaultRecordPath() { return "record.txt"; }
+
+inline PayrollSystem::PayrollSystem(std::string recordPath)
+    : nextId_(2001), recordPath_(std::move(recordPath)) {
+    loadRecords();
+}
+
+inline const std::string &PayrollSystem::recordPath() const noexcept { return recordPath_; }
+
+inline void PayrollSystem::setRecordPath(std::string path) {
+    recordPath_ = std::move(path);
+}
+
+inline Manager *PayrollSystem::addManager(const std::string &name) {
+    return emplaceEmployee<Manager>(name);
+}
+
+inline Technician *PayrollSystem::addTechnician(const std::string &name, double hourlyRate, double hoursWorked) {
+    return emplaceEmployee<Technician>(name, hourlyRate, hoursWorked);
+}
+
+inline Salesperson *PayrollSystem::addSalesperson(const std::string &name, double salesAmount) {
+    return emplaceEmployee<Salesperson>(name, salesAmount);
+}
+
+inline SalesManager *PayrollSystem::addSalesManager(const std::string &name, double departmentSales) {
+    return emplaceEmployee<SalesManager>(name, departmentSales);
+}
+
+inline std::vector<std::unique_ptr<Person>> &PayrollSystem::employees() noexcept { return employees_; }
+
+inline const std::vector<std::unique_ptr<Person>> &PayrollSystem::employees() const noexcept { return employees_; }
+
+inline Person *PayrollSystem::findById(int id) noexcept {
     for (auto &employee : employees_) {
-        total += employee->processPayroll();
-    }
-    saveRecords();
-    out << "本月薪资结算完成，总支出：" << fixed << setprecision(2) << total << " 元\n";
-}
-
-inline void PayrollSystem::handleShowPayroll(ostream &out) const {
-    if (employees_.empty()) {
-        out << "暂无员工信息。\n";
-        return;
-    }
-
-    out << "\n----------------- 薪资报表 -----------------\n"
-        << left << setw(8) << "工号" << setw(8) << "姓名" << setw(10) << "角色"
-        << setw(8) << "级别" << right << setw(12) << "最近薪资" << "\n"
-        << "-------------------------------------------\n";
-
-    for (const auto &employee : employees_) {
-        out << left << setw(8) << employee->getId() << setw(8) << employee->getName()
-            << setw(10) << employee->roleName() << setw(8) << employee->getLevelLabel()
-            << right << setw(12) << fixed << setprecision(2) << employee->getLastPay()
-            << "\n";
-    }
-    out << "-------------------------------------------\n"
-        << "提示：若薪资为 0，请先执行结算功能。\n";
-}
-
-inline unique_ptr<Person> PayrollSystem::createEmployee(int choice, istream &in, ostream &out) {
-    if (choice < 1 || choice > 4) {
-        out << "未识别的员工类型。\n";
-        return nullptr;
-    }
-
-    out << "正在创建第" << employees_.size() + 1 << "位员工 (工号" << nextId_ << ")。\n";
-    string name = readName(in, out);
-
-    unique_ptr<Person> employee;
-    switch (choice) {
-    case 1:
-        employee = make_unique<Manager>(nextId_, name);
-        break;
-    case 2:
-        employee = make_unique<Technician>(nextId_, name);
-        break;
-    case 3:
-        employee = make_unique<Salesperson>(nextId_, name);
-        break;
-    case 4:
-        employee = make_unique<SalesManager>(nextId_, name);
-        break;
-    default:
-        return nullptr;
-    }
-
-    ++nextId_;
-    return employee;
-}
-
-inline unique_ptr<Person> PayrollSystem::recreateEmployee(const string &type, int id, const string &name) {
-    if (type == "Manager") {
-        return make_unique<Manager>(id, name);
-    }
-    if (type == "Technician") {
-        return make_unique<Technician>(id, name);
-    }
-    if (type == "Salesperson") {
-        return make_unique<Salesperson>(id, name);
-    }
-    if (type == "SalesManager") {
-        return make_unique<SalesManager>(id, name);
+        if (employee->id() == id) {
+            return employee.get();
+        }
     }
     return nullptr;
 }
 
-inline string PayrollSystem::determineRecordPath() const {
-    const string localFile = "record.txt";
-    ifstream localStream(localFile);
-    if (localStream.is_open()) {
-        return localFile;
+inline const Person *PayrollSystem::findById(int id) const noexcept {
+    for (const auto &employee : employees_) {
+        if (employee->id() == id) {
+            return employee.get();
+        }
     }
+    return nullptr;
+}
 
-    ifstream headerStream("payroll_system.h");
-    if (headerStream.is_open()) {
-        return localFile;
+inline double PayrollSystem::processPayroll(Person &person) { return person.processPayroll(); }
+
+inline double PayrollSystem::processAllPayrolls() {
+    double total = 0.0;
+    for (auto &employee : employees_) {
+        total += employee->processPayroll();
     }
-
-    const string projectFile = "pro2/record.txt";
-    ifstream projectStream(projectFile);
-    if (projectStream.is_open()) {
-        return projectFile;
-    }
-
-    return projectFile;
+    return total;
 }
 
 inline void PayrollSystem::loadRecords() {
     employees_.clear();
-    ifstream file(recordPath_);
+    if (recordPath_.empty()) {
+        return;
+    }
+
+    std::ifstream file(recordPath_);
     if (!file.is_open()) {
         return;
     }
@@ -423,24 +351,24 @@ inline void PayrollSystem::loadRecords() {
     if (!(file >> recordCount)) {
         return;
     }
-    file.ignore(numeric_limits<streamsize>::max(), '\n');
+    file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     nextId_ = storedNextId;
     for (int i = 0; i < recordCount; ++i) {
-        string type;
+        std::string type;
         if (!(file >> type)) {
             break;
         }
-        file.ignore(numeric_limits<streamsize>::max(), '\n');
+        file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         int id = 0;
         if (!(file >> id)) {
             break;
         }
-        file.ignore(numeric_limits<streamsize>::max(), '\n');
+        file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        string name;
-        if (!getline(file, name)) {
+        std::string name;
+        if (!std::getline(file, name)) {
             break;
         }
 
@@ -448,10 +376,10 @@ inline void PayrollSystem::loadRecords() {
         if (!(file >> lastPay)) {
             break;
         }
-        file.ignore(numeric_limits<streamsize>::max(), '\n');
+        file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        string extraLine;
-        if (!getline(file, extraLine)) {
+        std::string extraLine;
+        if (!std::getline(file, extraLine)) {
             extraLine.clear();
         }
 
@@ -459,17 +387,22 @@ inline void PayrollSystem::loadRecords() {
         if (!employee) {
             continue;
         }
-        employee->loadExtra(extraLine);
         employee->restoreLastPay(lastPay);
+        std::istringstream extraStream(extraLine);
+        employee->readExtra(extraStream);
         if (id >= nextId_) {
             nextId_ = id + 1;
         }
-        employees_.push_back(move(employee));
+        employees_.push_back(std::move(employee));
     }
 }
 
 inline void PayrollSystem::saveRecords() const {
-    ofstream file(recordPath_);
+    if (recordPath_.empty()) {
+        return;
+    }
+
+    std::ofstream file(recordPath_);
     if (!file.is_open()) {
         return;
     }
@@ -478,11 +411,39 @@ inline void PayrollSystem::saveRecords() const {
     file << employees_.size() << '\n';
     for (const auto &employee : employees_) {
         file << employee->typeCode() << '\n';
-        file << employee->getId() << '\n';
-        file << employee->getName() << '\n';
-        file << employee->getLastPay() << '\n';
-        employee->saveExtra(file);
+        file << employee->id() << '\n';
+        file << employee->name() << '\n';
+        file << employee->lastPay() << '\n';
+        employee->writeExtra(file);
+        file << '\n';
     }
+}
+
+inline int PayrollSystem::nextId() const noexcept { return nextId_; }
+
+template <typename T, typename... Args>
+inline T *PayrollSystem::emplaceEmployee(Args &&...args) {
+    auto employee = std::make_unique<T>(nextId_, std::forward<Args>(args)...);
+    T *raw = employee.get();
+    employees_.push_back(std::move(employee));
+    ++nextId_;
+    return raw;
+}
+
+inline std::unique_ptr<Person> PayrollSystem::recreateEmployee(const std::string &type, int id, const std::string &name) const {
+    if (type == "Manager") {
+        return std::make_unique<Manager>(id, name);
+    }
+    if (type == "Technician") {
+        return std::make_unique<Technician>(id, name);
+    }
+    if (type == "Salesperson") {
+        return std::make_unique<Salesperson>(id, name);
+    }
+    if (type == "SalesManager") {
+        return std::make_unique<SalesManager>(id, name);
+    }
+    return nullptr;
 }
 
 #endif // PAYROLL_SYSTEM_H
