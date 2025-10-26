@@ -41,7 +41,7 @@ private:
     double lastPay_;
 };
 
-class Manager : public Person {
+class Manager : public virtual Person {
 public:
     Manager(int id, string name);
 
@@ -78,7 +78,7 @@ private:
     double hoursWorked_;
 };
 
-class Salesperson : public Person {
+class Salesperson : public virtual Person {
 public:
     Salesperson(int id, string name, double salesAmount = 0.0);
 
@@ -98,7 +98,7 @@ private:
     double salesAmount_;
 };
 
-class SalesManager : public Person {
+class SalesManager : public Manager, public Salesperson {
 public:
     SalesManager(int id, string name, double departmentSales = 0.0);
 
@@ -249,11 +249,15 @@ inline void Salesperson::readExtra(istream &in) {
 inline double Salesperson::computePay() const { return salesAmount_ * 0.04; }
 
 inline SalesManager::SalesManager(int id, string name, double departmentSales)
-    : Person(id, move(name), 2), departmentSales_(departmentSales) {}
+    : Person(id, name, 2), Manager(id, name), Salesperson(id, move(name), departmentSales),
+      departmentSales_(departmentSales) {}
 
 inline double SalesManager::departmentSales() const noexcept { return departmentSales_; }
 
-inline void SalesManager::setDepartmentSales(double amount) { departmentSales_ = amount; }
+inline void SalesManager::setDepartmentSales(double amount) {
+    departmentSales_ = amount;
+    Salesperson::setSalesAmount(amount);
+}
 
 inline string SalesManager::roleName() const { return "销售经理"; }
 
@@ -264,9 +268,9 @@ inline void SalesManager::writeExtra(ostream &out) const { out << departmentSale
 inline void SalesManager::readExtra(istream &in) {
     double value = departmentSales_;
     if (in >> value) {
-        departmentSales_ = value;
+        setDepartmentSales(value);
     } else {
-        departmentSales_ = 0.0;
+        setDepartmentSales(0.0);
     }
 }
 
