@@ -75,7 +75,7 @@ int readIntInRange(const string &prompt, int minValue, int maxValue) {
 
 void printMenu(const PayrollSystem &system) {
     cout << "\n=========== 公司人员薪酬管理系统 ===========\n"
-         << "当前员工数量：" << system.employees().size() << "\n"
+         << "当前员工数量：" << system.getEmployees().size() << "\n"
          << "1. 添加经理\n"
          << "2. 添加技术人员\n"
          << "3. 添加推销员\n"
@@ -125,13 +125,13 @@ void handleAddEmployee(PayrollSystem &system, int type) {
     }
 
     system.saveRecords();
-    cout << "已添加员工：" << person->name() << " (" << person->roleName() << ", 工号" << person->id()
+    cout << "已添加员工：" << person->getName() << " (" << person->getRoleName() << ", 工号" << person->getId()
          << ")\n";
 }
 
 void capturePayrollDetails(Person &person) {
     if (auto *technician = dynamic_cast<Technician *>(&person)) {
-        cout << "当前时薪：" << fixed << setprecision(2) << technician->hourlyRate() << " 元/小时\n";
+        cout << "当前时薪：" << fixed << setprecision(2) << technician->getHourlyRate() << " 元/小时\n";
         double hours = readNonNegativeDouble("请输入本月工作小时数：");
         technician->setHoursWorked(hours);
     } else if (auto *salesperson = dynamic_cast<Salesperson *>(&person)) {
@@ -144,7 +144,7 @@ void capturePayrollDetails(Person &person) {
 }
 
 void settlePayroll(PayrollSystem &system) {
-    auto &list = system.employees();
+    auto &list = system.getEmployees();
     if (list.empty()) {
         cout << "暂无员工信息，请先录入员工。\n";
         return;
@@ -152,9 +152,9 @@ void settlePayroll(PayrollSystem &system) {
 
     cout << "\n------------- 薪资结算 -------------\n";
     double total = 0.0;
-    for (auto &employee : list) {
+    for (auto employee : list) {
         Person &person = *employee;
-        cout << "\n[" << person.roleName() << "] " << person.name() << " (工号" << person.id() << ")\n";
+        cout << "\n[" << person.getRoleName() << "] " << person.getName() << " (工号" << person.getId() << ")\n";
         capturePayrollDetails(person);
         double pay = system.processPayroll(person);
         cout << "本月薪资：" << fixed << setprecision(2) << pay << " 元\n";
@@ -166,7 +166,7 @@ void settlePayroll(PayrollSystem &system) {
 }
 
 void showPayroll(const PayrollSystem &system) {
-    const auto &list = system.employees();
+    const auto &list = system.getEmployees();
     if (list.empty()) {
         cout << "暂无员工信息。\n";
         return;
@@ -177,11 +177,11 @@ void showPayroll(const PayrollSystem &system) {
          << right << setw(12) << "最近薪资" << "\n"
          << "-------------------------------------------\n";
 
-    for (const auto &employee : list) {
+    for (const auto employee : list) {
         const Person &person = *employee;
-        cout << left << setw(8) << person.id() << setw(10) << person.name() << setw(12)
-             << person.roleName() << setw(8) << person.levelLabel() << right << setw(12) << fixed
-             << setprecision(2) << person.lastPay() << "\n";
+        cout << left << setw(8) << person.getId() << setw(10) << person.getName() << setw(12)
+             << person.getRoleName() << setw(8) << person.getLevelLabel() << right << setw(12) << fixed
+             << setprecision(2) << person.getSalary() << "\n";
     }
     cout << "-------------------------------------------\n" << "提示：若薪资为 0，请先执行结算功能。\n";
 }
