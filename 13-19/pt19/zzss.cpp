@@ -13,7 +13,7 @@ class Mode {
         bestCount = kv.second;
         mode_value_ = kv.first;
       }
-    }
+    } 
   }
 
 public:
@@ -23,7 +23,6 @@ public:
     }
     updateMode();
   }
-
   void Insert(int value) {
     ++count_[value];
     if (count_[value] > count_[mode_value_]) {
